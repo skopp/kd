@@ -1,0 +1,27 @@
+{
+  "name":         "kd",
+  "description":  "Koding KD CLI",
+  "keywords":     ["koding", "kd", "kite", "kdapp"],
+  "author":       "Fatih Kadir Akın <fka@koding.com>",
+  "version":      "0.0.1",
+  "licenses":     [{
+    "type":       "MIT",
+    "url":        "https://raw.github.com/koding/kd/master/LICENSE"
+  }],
+  "engines":      {
+    "node":       ">=0.8.0"
+  },
+  "main" : "./main.coffee",
+  "bin":          {
+    "kd":     "./bin/kd"
+  },
+  "homepage":     "http://koding.com",
+  "bugs":         "https://github.com/koding/kd/issues",
+  "repository":   {
+    "type": "git",
+    "url": "git://github.com/koding/kd.git"
+  },
+  "devDependencies": {
+    "coffee-script": ">=1.6.0"
+  }
+}
