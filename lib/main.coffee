@@ -1,31 +1,69 @@
+fs = require "fs"
+
+class ConfigFile
+  constructor: ->
+    @configFile = "#{process.env.HOME}/.kdconfig"
+    try
+      @config = @load @configFile
+    catch error
+      @config = {}
+      @save @configFile, @config
+
+  save: (config)->
+    fs.writeFileSync @configFile, JSON.stringify @config
+
+  load: ()-> 
+    @config = JSON.parse fs.readFileSync @configFile
+
 module.exports = class KodingCLI
 
+  # import log from console.
+  {log} = console
+
   constructor: (@module, @command, @params)->
+
+    # root directory of running command is @root
     @root = process.cwd()
+
+    unless module
+      return log """
+      Hi, this is the Koding CLI tool.
+      You must choose a module. (e.g. kite, app)
+      """
+    
+    # Loading module from the module path.
     try
       @moduleClass = require "#{__dirname}/../modules/#{module}"
-    catch e
-      console.log "[Koding] ERROR: Module #{module} not found."
+    catch error
+      log "[Koding] ERROR: Module #{module} not found."
       return
 
+    {help} = @moduleClass
+
+    # If user doesn't define any command, show help. If help is available.
     unless @command
-      console.log "[Koding:#{module}] INFO: Displaying help text."
-      console.log @moduleClass.help
-      return
+      if help then return log help else return log "It's #{module}s or something. That's all."
 
+    # Trying to create new instance.
     try
-      @moduleInstance = new @moduleClass
-    catch e
-      console.log "[Koding:#{module}] ERROR: Module instance couldn't be created."
+      @moduleInstance = new @moduleClass new ConfigFile
+    catch error
+      log error
+      log "[Koding:#{module}] ERROR: Module instance couldn't be created."
       return
 
+    # Trying to *find* new instances method as command
     unless @moduleInstance[@command]
-      console.log "[Koding:#{module}] ERROR: Command #{command} not found."
+      log "[Koding:#{module}] ERROR: Command #{command} not found."
       return
 
+    # Trying to run the command.
     try
       @moduleInstance[@command] @params...
     catch error
-      console.log "[Koding:#{module}] EXCEPTION: #{error.message or error}"
+      # If any error occures, show the error.
+      log "[Koding:#{module}] EXCEPTION: #{error.message or error}"
 
-  @run: (coffeeBin, file, module, command, params...) => new @ module, command, params
+  # Creating new instance from command line tool.
+  @run: (coffeeBin, file, module, command, params...) => 
+    new @ module, command, params
