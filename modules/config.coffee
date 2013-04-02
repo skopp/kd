@@ -9,22 +9,28 @@ module.exports = class Config
 
   kd config set user.name [username]
   kd config set user.email [email]
+  kd config get user.name
+  kd config get user.email
+  kd config list
   """
 
-  constructor: (@configFile)->
+  constructor: (@config)->
 
   set: (key, value...)->
     unless key and value
       return log "You must define a key and a value to set a config variable."
-    @configFile.config[key] = value.join " "
-    @configFile.save @configFile.config
+    @config.set key, value...
+    @config.save()
 
   get: (key)->
-    value = @configFile.config[key]
+    value = @config.get key
     unless value
       return log "Config #{key} is not defined."
-    log "#{key}=\"#{}\""
+    log "#{key}=\"#{value}\""
 
   remove: (key)->
-    delete @configFile.config[key]
-    @configFile.save @configFile.config
+    @config.remove key
+    @config.save()
+
+  list:->
+    log "#{key}=\"#{item}\"" for key, item of @config.getAll()

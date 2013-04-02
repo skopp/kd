@@ -1,19 +1,4 @@
-fs = require "fs"
-
-class ConfigFile
-  constructor: ->
-    @configFile = "#{process.env.HOME}/.kdconfig"
-    try
-      @config = @load @configFile
-    catch error
-      @config = {}
-      @save @configFile, @config
-
-  save: (config)->
-    fs.writeFileSync @configFile, JSON.stringify @config
-
-  load: ()-> 
-    @config = JSON.parse fs.readFileSync @configFile
+ConfigFile = require "./config"
 
 module.exports = class KodingCLI
 
