@@ -29,6 +29,8 @@ module.exports = class KodingCLI
     unless @command
       if help then return log help else return log "It's #{module}s or something. That's all."
 
+    if @command is "help" then return log help
+
     # Trying to create new instance.
     try
       @moduleInstance = new @moduleClass new ConfigFile
@@ -36,6 +38,10 @@ module.exports = class KodingCLI
       log error
       log "[Koding:#{module}] ERROR: Module instance couldn't be created."
       return
+
+    # Replace command with the alias
+    if @moduleInstance.alias?[@command]
+      @command = @moduleInstance.alias[@command]
 
     # Trying to *find* new instances method as command
     unless @moduleInstance[@command]

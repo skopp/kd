@@ -4,6 +4,9 @@ module.exports = class Config
 
   {log} = console
 
+  alias:
+    ls: "list"
+
   @help:"""
   Koding configuration settings.
 
@@ -11,7 +14,7 @@ module.exports = class Config
   kd config set user.email [email]
   kd config get user.name
   kd config get user.email
-  kd config list
+  kd config list|ls
   """
 
   constructor: (@config)->
