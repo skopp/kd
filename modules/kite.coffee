@@ -43,7 +43,7 @@ module.exports = class Kite
 
     config = 
       name      : '#{name}'
-      apiAdress : 'http://koding.com'
+      apiAdress : 'http://localhost:3000'
       key       : '#{key}'
 
     module.exports = new Kite config,
@@ -61,4 +61,5 @@ module.exports = class Kite
     child.stdout.on "data", (data)->
       process.stdout.write data.toString()
 
-  keygen: (name)-> log "12345.12345.12345"
+  keygen: (name)-> 
+    log "Keygen is not available for now. Please use Koding > Account > Kite Keys to have one."
