@@ -32,7 +32,7 @@ module.exports = class Kite
     bash = """
     mkdir #{kiteDir}
     cd #{kiteDir}
-    touch .manifest.coffee
+    touch manifest.js
     touch index.coffee
     mkdir test
     touch test/test.coffee
@@ -43,25 +43,24 @@ module.exports = class Kite
     # Kite index.file
     index = """
     Kite = require 'kd-kite'
-    manifest = require './.manifest'
+    manifest = require './manifest'
 
     module.exports = new Kite manifest,
       pingKite: (options, callback) ->
         return callback null, "pong from #{name}"
     """
 
-    manifest = """
-    module.exports =
-      name      : '#{name}'
-      apiAdress : 'http://localhost:3000'
-      key       : '#{key}'
-    """
+    manifest = 
+      name      : name,
+      apiAdress : 'http://localhost:3000',
+      key       : ''
 
     fs.writeFileSync tmpFile, bash
     log "Installing Kite Modules..."
     exec "bash #{tmpFile}", (err)->
       fs.writeFileSync "#{kiteDir}/index.coffee", index
-      fs.writeFileSync "#{kiteDir}/.manifest.coffee", manifest
+      manifestData = JSON.stringify manifest, null, 2
+      fs.writeFileSync "#{kiteDir}/manifest.js", "module.exports = #{manifestData};"
       log "Your kite created successfully."
 
   run: ->
@@ -77,6 +76,13 @@ module.exports = class Kite
 
   keygen: (name)-> 
     log "Keygen is not available for now. Please use Koding > Account > Kite Keys to have one."
+
+  manifest: (key, value)->
+    manifestFile = "#{process.cwd()}/manifest.js"
+    manifest = require manifestFile
+    manifest[key] = value
+    manifestData = JSON.stringify manifest, null, 2
+    fs.writeFileSync manifestFile, "module.exports = #{manifestData};"
 
   test: ->
     kiteTestFile = "#{process.cwd()}/test/test.coffee"
