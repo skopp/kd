@@ -33,8 +33,10 @@ module.exports = class Kite
     mkdir #{kiteDir}
     cd #{kiteDir}
     touch index.coffee
+    mkdir test
+    touch test/test.coffee
     mkdir node_modules
-    npm install kd-kite
+    npm install kd-kite mocha
     """
 
     # Kite index.file
@@ -69,3 +71,15 @@ module.exports = class Kite
 
   keygen: (name)-> 
     log "Keygen is not available for now. Please use Koding > Account > Kite Keys to have one."
+
+  test: ->
+    kiteTestFile = "#{process.cwd()}/test/test.coffee"
+    exists = fs.existsSync kiteTestFile
+
+    if exists
+      exec "coffee -c #{kiteTestFile}", ->
+        child = spawn "#{process.cwd()}/node_modules/mocha/bin/mocha", [kiteTestFile]
+        child.stdout.on "data", (data)->
+          process.stdout.write data.toString()
+    else
+      log "The test file doesn't exist."
