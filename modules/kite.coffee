@@ -32,6 +32,7 @@ module.exports = class Kite
     bash = """
     mkdir #{kiteDir}
     cd #{kiteDir}
+    touch .manifest.coffee
     touch index.coffee
     mkdir test
     touch test/test.coffee
@@ -42,20 +43,25 @@ module.exports = class Kite
     # Kite index.file
     index = """
     Kite = require 'kd-kite'
+    manifest = require './.manifest'
 
-    config = 
-      name      : '#{name}'
-      apiAdress : 'http://localhost:3000'
-      key       : '#{key}'
-
-    module.exports = new Kite config,
+    module.exports = new Kite manifest,
       pingKite: (options, callback) ->
         return callback null, "pong from #{name}"
     """
+
+    manifest = """
+    module.exports =
+      name      : '#{name}'
+      apiAdress : 'http://localhost:3000'
+      key       : '#{key}'
+    """
+
     fs.writeFileSync tmpFile, bash
     log "Installing Kite Modules..."
     exec "bash #{tmpFile}", (err)->
       fs.writeFileSync "#{kiteDir}/index.coffee", index
+      fs.writeFileSync "#{kiteDir}/.manifest.coffee", manifest
       log "Your kite created successfully."
 
   run: ->
