@@ -47,7 +47,7 @@ module.exports = class Kite
       key       : '#{key}'
 
     module.exports = new Kite config,
-      ping: (options, callback) ->
+      pingKite: (options, callback) ->
         return callback null, "pong from #{name}"
     """
     fs.writeFileSync tmpFile, bash
@@ -57,9 +57,15 @@ module.exports = class Kite
       log "Your kite created successfully."
 
   run: ->
-    child = spawn "coffee", ["index.coffee"]
-    child.stdout.on "data", (data)->
-      process.stdout.write data.toString()
+    kiteFile = "#{process.cwd()}/index.coffee"
+    exists = fs.existsSync kiteFile
+    
+    if exists
+      child = spawn "coffee", [kiteFile]
+      child.stdout.on "data", (data)->
+        process.stdout.write data.toString()
+    else
+      log "The index.coffee doesn't exist."
 
   keygen: (name)-> 
     log "Keygen is not available for now. Please use Koding > Account > Kite Keys to have one."
