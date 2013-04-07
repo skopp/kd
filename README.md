@@ -17,9 +17,9 @@ You can run modules simply calling
 
 Examples:
 
-    kd kite create --name mykite
+    kd kite create mykite --key x
 
-This will run `./modules/kite.coffee:create("mykite")`.
+This will run `./modules/kite.coffee:create("mykite")` with binding `{options: {key: 'x'}}`.
 
 You can define subcommands:
 
@@ -50,7 +50,8 @@ This is an example with a name `mymodule.coffee`
       constructor: (@config)->
     
       hello: (name)->
-        console.log "hello world #{name}"
+        {with} = @options
+        console.log "hello #{name} and #{with}"
 
 The `@help` static is mandatory. When user call `kd mymodule` that information will be shown.
 
@@ -58,11 +59,11 @@ The `@help` static is mandatory. When user call `kd mymodule` that information w
 
 The example above can be run calling:
 
-    kd mymodule hello koding
+    kd mymodule hello koding --with birds
 
 The output will be:
 
-    hello world koding
+    hello koding and birds
 
 ## Kite Module
 
