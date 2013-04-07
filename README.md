@@ -13,13 +13,27 @@ After installing KD, you will have a `kd` executable to use everywhere.
 
 You can run modules simply calling
 
-    kd module [command] [, params]
+    kd module [command] [, subcommands] [, params]
 
 Examples:
 
-    kd kite create mykite
+    kd kite create --name mykite
 
 This will run `./modules/kite.coffee:create("mykite")`.
+
+You can define subcommands:
+
+    kd module command sub1 sub2 --paramkey paramval --paramkey1 paramval1 --parambool
+
+This command will match these pattern:
+
+    class Module
+      command: (sub1, sub2)->
+        {paramkey, paramkey1, parambool} = @options
+
+        # paramkey is paramval
+        # paramkey1 is paramval1
+        # parambool is true
 
 ## Modules
 
@@ -58,15 +72,15 @@ Kite is the module for kite management in Koding.
 
 Creating a kite is simple:
 
-    kd kite create mykite
+    kd kite create --name mykite
 
 Also you can create a kite with a key.
 
-    kd kite create mykite mykitekey
+    kd kite create --name mykite --key mykitekey
 
 As an example:
 
-    kd kite create mykite 83949f9d9w939r9v9d93939t9f9d9939596003
+    kd kite create --name mykite --key 83949f9d9w939r9v9d93939t9f9d9939596003
 
 You can now enter the kite directory with
 

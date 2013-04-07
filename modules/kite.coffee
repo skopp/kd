@@ -9,14 +9,17 @@ module.exports = class Kite
   Kites are simply web services for Koding.
   You can share your kites over internet.
 
-  kd kite create [name]     Create Kite
-  kd kite keygen [name]     Create a key for Kite
-  kd kite run               Run the kite in current working directory.
+  kd kite create --name [name] --key [key]    Create Kite
+  kd kite manifest key [value]                Set/Get Manifest Variable
+  kd kite run                                 Run the kite in current working directory.
   """
 
   constructor: ({@config})->
   
-  create: (name, key = "")->
+  create: ()->
+
+    {name, key, domain} = @options
+
     unless name
       return log "You must define a kite name."
     
@@ -42,6 +45,10 @@ module.exports = class Kite
 
     # Kite index.file
     index = """
+    ###
+    #{name} Kite for Koding
+    Author: #{@config['user.name']} <#{@config['user.email'] or 'you@example.com'}>
+    ###
     Kite = require 'kd-kite'
     manifest = require './manifest'
 
@@ -51,9 +58,9 @@ module.exports = class Kite
     """
 
     manifest = 
-      name      : name,
-      apiAdress : 'http://localhost:3000',
-      key       : ''
+      name      : name or 'Untitled',
+      apiAdress : domain or 'https://koding.com',
+      key       : key or ''
 
     fs.writeFileSync tmpFile, bash
     log "Installing Kite Modules..."
@@ -80,9 +87,13 @@ module.exports = class Kite
   manifest: (key, value)->
     manifestFile = "#{process.cwd()}/manifest.js"
     manifest = require manifestFile
-    manifest[key] = value
-    manifestData = JSON.stringify manifest, null, 2
-    fs.writeFileSync manifestFile, "module.exports = #{manifestData};"
+    unless value
+      log manifest[key]
+    else
+      manifest[key] = value
+      manifestData = JSON.stringify manifest, null, 2
+      fs.writeFileSync manifestFile, "module.exports = #{manifestData};"
+
 
   test: ->
     kiteTestFile = "#{process.cwd()}/test/test.coffee"

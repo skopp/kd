@@ -6,6 +6,7 @@ module.exports = class ConfigFile
     try
       @config = @load @configFile
     catch error
+      @config = {}
       @save()
 
   get: (key)-> @config[key]
