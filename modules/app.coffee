@@ -14,7 +14,7 @@ module.exports = class App
     
     for file in files
       block = """
-      /* BLOCK STARTS: #{fs.realPathSync(file)} */
+      /* BLOCK STARTS: #{file} */
       #{coffee.compile(fs.readFileSync(file).toString())}
       """
       block = block.replace @pistachios, (pistachio)-> pistachio.replace /\@/g, 'this.'
