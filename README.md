@@ -115,7 +115,11 @@ Kites have `manifest.js` files. These files looks like:
 
 This is the configuration file and you can easily change values using the `kd` cli tool.
 
-    kd kite manifest key 123456
+    kd kite manifest --key=123456
+
+or
+
+    kd kite manifest -k 123456
 
 After writing that command your manifest file will be something like that:
 
@@ -127,4 +131,16 @@ After writing that command your manifest file will be something like that:
 
 Also you can add custom variables into manifest file using
 
-    kd kite manifest key value
+    kd kite manifest --key=key --value=value
+
+## App Module
+
+You can manage apps using KD CLI tool.
+
+### Compiling Koding App
+
+When you are in KD App directory, you can use `compile` command to compile the application.
+
+    kd app compile
+
+This will compile your application files and generate an `index.js`
