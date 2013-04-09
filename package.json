@@ -21,7 +21,8 @@
     "type": "git",
     "url": "git://github.com/koding/kd.git"
   },
-  "devDependencies": {
-    "coffee-script": ">=1.6.0"
+  "dependencies": {
+    "coffee-script": ">=1.6.0",
+    "optimist": ">=0.3.7"
   }
 }

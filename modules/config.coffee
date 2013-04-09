@@ -10,11 +10,12 @@ module.exports = class Config
   @help:"""
   Koding configuration settings.
 
-  kd config set user.name [username]
-  kd config set user.email [email]
-  kd config set [key] [value]
-  kd config remove [key]
-  kd config list|ls
+  You can use following commands:
+
+  kd config set
+  kd config get
+  kd config remove
+  kd config list
   """
 
   constructor: (@config)->

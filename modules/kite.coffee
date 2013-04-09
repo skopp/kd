@@ -8,17 +8,29 @@ module.exports = class Kite
   @help:"""
   Kites are simply web services for Koding.
   You can share your kites over internet.
+ 
+  You can run following commands:
 
-  kd kite create --name [name] --key [key]    Create Kite
-  kd kite manifest key [value]                Set/Get Manifest Variable
-  kd kite run                                 Run the kite in current working directory.
+  kd kite create
+  kd kite run
+  kd kite test
+  kd kite manifest
+  kd kite keygen
   """
 
   constructor: ({@config})->
   
-  create: ()->
+  create: ->
 
-    {name, key, domain} = @options
+    {argv: {name, key, domain}} = @options
+      .usage("Creates a Kite template")
+      .demand(["n"])
+      .alias("n", "name")
+      .alias("k", "key")
+      .alias("d", "domain")
+      .describe("n", "Name of the Kite")
+      .describe("k", "Access key of the Kite")
+      .describe("d", "Domain of the Kite, for debug")
 
     unless name
       return log "You must define a kite name."
@@ -84,7 +96,15 @@ module.exports = class Kite
   keygen: (name)-> 
     log "Keygen is not available for now. Please use Koding > Account > Kite Keys to have one."
 
-  manifest: (key, value)->
+  manifest: ->
+    {argv: {key, value}} = @options
+      .usage("Creates key-value pairs in manifest.js file.")
+      .demand(["k"])
+      .alias("k", "key")
+      .alias("v", "value")
+      .describe("k", "Key of the kite manifest item")
+      .describe("v", "Value of the kite manifest item")
+
     manifestFile = "#{process.cwd()}/manifest.js"
     manifest = require manifestFile
     unless value

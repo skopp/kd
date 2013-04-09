@@ -5,18 +5,6 @@ module.exports = class KodingCLI
   # import log from console.
   {log} = console
 
-  # parsing parameters
-  parseParams: (params)->
-    dict = {}
-    for keyOrValue, i in params
-      key = keyOrValue.replace /^\-\-/, ''
-      if keyOrValue.match /^\-\-\w+/
-        if params[i+1]?.match /^\-\-\w+/
-          dict[key] = true
-        else
-          dict[key] = params[i+1] or true
-    dict
-
   constructor: (@module, @command, @params)->
 
     # root directory of running command is @root
@@ -62,7 +50,7 @@ module.exports = class KodingCLI
 
     # Trying to run the command.
     try
-      @moduleInstance.options = @parseParams @params
+      @moduleInstance.options = require "optimist"
       @moduleInstance[@command] @params...
     catch error
       # If any error occures, show the error.
