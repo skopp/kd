@@ -37,7 +37,10 @@ module.exports = class App
     """
     fs.writeFileSync "#{process.cwd()}/index.js", mainSource
 
-  upload: ->
+  create: (name)->
+    log "Creating new app is coming very soon..."
+
+  sync: ->
     unless process.cwd().match /\.kdapp$/
       return log """
       You are not in an application directory. Application directory names
