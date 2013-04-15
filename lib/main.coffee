@@ -1,3 +1,4 @@
+fs = require "fs"
 ConfigFile = require "./config"
 
 module.exports = class KodingCLI
@@ -11,10 +12,17 @@ module.exports = class KodingCLI
     @root = process.cwd()
 
     unless module
-      return log """
+
+      available = fs.readdirSync "#{__dirname}/../modules"
+
+      log """
       Hi, this is the Koding CLI tool.
       You must choose a module. (e.g. kite, app)
+
       """
+      log "You can run following modules:\n"
+      log "kd #{module.replace /.coffee$/, ''}" for module in available
+      return
     
     # Loading module from the module path.
     try

@@ -8,7 +8,7 @@ module.exports = class Kite
   @help:"""
   Kites are simply web services for Koding.
   You can share your kites over internet.
- 
+
   You can run following commands:
 
   kd kite create
@@ -40,8 +40,6 @@ module.exports = class Kite
 
     kiteDir = "#{process.cwd()}/#{name}"
     tmpFile = "/tmp/koding.kd.kite.create.#{Date.now()}"
-
-    log "Creating Kite..."
 
     # Bash file to run.
     bash = """
@@ -75,8 +73,10 @@ module.exports = class Kite
       key       : key or ''
 
     fs.writeFileSync tmpFile, bash
-    log "Installing Kite Modules..."
-    exec "bash #{tmpFile}", (err)->
+    log "Installing Kite Modules, please wait..."
+
+    install = spawn "bash", [tmpFile] 
+    install.on "close", ->
       fs.writeFileSync "#{kiteDir}/index.coffee", index
       manifestData = JSON.stringify manifest, null, 2
       fs.writeFileSync "#{kiteDir}/manifest.js", "module.exports = #{manifestData};"
