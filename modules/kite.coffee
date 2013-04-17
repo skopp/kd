@@ -86,8 +86,8 @@ module.exports = class Kite
 
     install = spawn "bash", [tmpFile]
     
-    install.stdout.on "data", log
-    install.stderr.on "data", log
+    install.stdout.on "data", (data)-> log data.toString()
+    install.stderr.on "data", (data)-> log data.toString()
 
     install.on "close", ->
       fs.writeFileSync "#{kiteDir}/index.coffee", index
