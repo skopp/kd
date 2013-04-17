@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "coffee-script": ">=1.6.0",
-    "optimist": ">=0.3.7"
+    "optimist": ">=0.3.7",
+    "ftps": ">=0.2.1"
   }
 }

@@ -2,6 +2,44 @@ fs = require "fs"
 {exec} = require "child_process"
 coffee = require "coffee-script"
 
+manifest = (username, name)->
+  JSON.stringify
+    devMode: true
+    version: "0.1"
+    name: name
+    
+{
+  "devMode": true,
+  "version": "0.1",
+  "name": "#{name}",
+  "identifier": "com.koding.apps.#{name}",
+  "path": "~/Applications/#{name}.kdapp",
+  "homepage": "#{username}.koding.com/#{name}",
+  "author": "",
+  "repository": "git://github.com/#{username}/#{name}.kdapp.git",
+  "description": "#{name} : a Koding application created with the blank template.",
+  "category": "web-app",
+  "source": {
+    "blocks": {
+      "app": {
+        "files": [
+          "./index.coffee"
+        ]
+      }
+    },
+    "stylesheets": [
+      "./resources/style.css"
+    ]
+  },
+  "options": {
+    "type": "tab"
+  },
+  "icns": {
+    "128": "./resources/icon.128.png"
+  }
+}
+"""
+
 {log} = console
 
 module.exports = class App

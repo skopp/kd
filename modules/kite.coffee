@@ -50,7 +50,7 @@ module.exports = class Kite
     mkdir test
     touch test/test.coffee
     mkdir node_modules
-    npm install kd-kite mocha
+    npm install kd-kite kd-rope mocha
     """
 
     # Kite index.file
@@ -89,6 +89,8 @@ module.exports = class Kite
     if exists
       child = spawn "coffee", [kiteFile]
       child.stdout.on "data", (data)->
+        process.stdout.write data.toString()
+      child.stderr.on "data", (data)->
         process.stdout.write data.toString()
     else
       log "The index.coffee doesn't exist."
