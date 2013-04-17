@@ -84,7 +84,11 @@ module.exports = class Kite
     fs.writeFileSync tmpFile, bash
     log "Installing Kite Modules, please wait..."
 
-    install = spawn "bash", [tmpFile] 
+    install = spawn "bash", [tmpFile]
+    
+    install.stdout.on "data", log
+    install.stderr.on "data", log
+
     install.on "close", ->
       fs.writeFileSync "#{kiteDir}/index.coffee", index
       manifestData = JSON.stringify manifest, null, 2
