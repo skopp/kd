@@ -43,8 +43,8 @@ module.exports = class Kite
 
     # Bash file to run.
     bash = """
-    mkdir #{kiteDir}
-    cd #{kiteDir}
+    mkdir #{kiteDir}.kite
+    cd #{kiteDir}.kite
     touch manifest.js
     touch index.coffee
     mkdir test
