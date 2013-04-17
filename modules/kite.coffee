@@ -60,11 +60,20 @@ module.exports = class Kite
     Author: #{@config['user.name']} <#{@config['user.email'] or 'you@example.com'}>
     ###
     Kite = require 'kd-kite'
+    rope = require 'kd-rope'
     manifest = require './manifest'
 
-    module.exports = new Kite manifest,
+    kite = new Kite manifest,
       pingKite: (options, callback) ->
+        
+        # anotherKite = rope kite, 'anotherKite'
+        
+        # anotherKite.pingKite {param: true}, (err, result)->
+        #   callback null, result
+
         return callback null, "pong from #{name}"
+    
+    module.exports = kite
     """
 
     manifest = 
