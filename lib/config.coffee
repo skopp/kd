@@ -1,3 +1,4 @@
+YAML = require "js-yaml"
 fs = require "fs"
 
 module.exports = class ConfigFile
@@ -16,7 +17,7 @@ module.exports = class ConfigFile
   getAll: -> @config
 
   save:->
-    fs.writeFileSync @configFile, JSON.stringify @config, null, 2
+    fs.writeFileSync @configFile, YAML.dump @config
 
   load:-> 
-    @config = JSON.parse fs.readFileSync @configFile
+    @config = YAML.load fs.readFileSync(@configFile).toString()

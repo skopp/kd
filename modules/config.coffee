@@ -20,10 +20,10 @@ module.exports = class Config
 
   constructor: (@config)->
 
-  set: (key, value)->
+  set: (key, value...)->
     unless key and value
       return log "You must define a key and a value to set a config variable."
-    @config.set key, value
+    @config.set key, value...
     @config.save()
 
   get: (key)->
