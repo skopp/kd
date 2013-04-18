@@ -7,6 +7,9 @@ Progress = require "progress"
 
 module.exports = class Kite
 
+  alias:
+    "new": "create"
+
   @help:"""
   Kites are simply web services for Koding.
   You can share your kites over internet.

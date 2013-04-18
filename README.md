@@ -53,9 +53,14 @@ This is an example with a name `mymodule.coffee`
         {with} = @options
         console.log "hello #{name} and #{with}"
 
+      __command: (command, params)->
+        # magic command
+
 The `@help` static is mandatory. When user call `kd mymodule` that information will be shown.
 
 `@config` variable is the `~/.kdconfig` file. It's a JSON file and you can set global variables using `config` module (write `kd config`).
+
+If you write `__command` into your module class, your module will never give a error about command existance. It'll call that method.
 
 The example above can be run calling:
 
@@ -105,13 +110,11 @@ will run the tests.
 
 ### Configuring the Kite
 
-Kites have `manifest.js` files. These files looks like:
+Kites have `.manifest.yml` files. These files looks like:
 
-    module.exports = {
-        "name": "mykite",
-        "apiAdress": "http://koding.com",
-        "key": ""
-    };
+    name": mykite
+    apiAdress: "http://koding.com
+    key: ""
 
 This is the configuration file and you can easily change values using the `kd` cli tool.
 
@@ -123,11 +126,9 @@ or
 
 After writing that command your manifest file will be something like that:
 
-    module.exports = {
-      "name": "mykite",
-      "apiAdress": "http://koding.com",
-      "key": "123456"
-    };
+    name": mykite
+    apiAdress: "http://koding.com
+    key: 123456
 
 Also you can add custom variables into manifest file using
 

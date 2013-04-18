@@ -32,6 +32,12 @@ module.exports = class KodingCLI
       log "You can run following modules:\n"
       log "kd #{module.replace /.coffee$/, ''} [command]" for module in available
       return
+
+    @configFile = new ConfigFile
+
+    # Replace module with the alias
+    if @configFile.config.alias?[module]
+      module = @configFile.config.alias[module]
     
     # Loading module from the module path.
     try
@@ -53,7 +59,7 @@ module.exports = class KodingCLI
 
     # Trying to create new instance.
     try
-      @moduleInstance = new @moduleClass new ConfigFile
+      @moduleInstance = new @moduleClass @configFile
     catch error
       log error
       log "[Koding:#{module}] ERROR: Module instance couldn't be created."
@@ -65,13 +71,19 @@ module.exports = class KodingCLI
 
     # Trying to *find* new instances method as command
     unless @moduleInstance[@command]
-      log "[Koding:#{module}] ERROR: Command #{command} not found."
-      return
+      unless @moduleInstance.__command
+        log "[Koding:#{module}] ERROR: Command #{command} not found."
+        return
+      else
+        nocommand = true
 
     # Trying to run the command.
     try
       @moduleInstance.options = require "optimist"
-      @moduleInstance[@command] @params...
+      unless nocommand
+        @moduleInstance[@command] @params...
+      else
+        @moduleInstance.__command @command, @params
     catch error
       # If any error occures, show the error.
       log "[Koding:#{module}] EXCEPTION: #{error.message or error}"
