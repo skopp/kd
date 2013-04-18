@@ -6,6 +6,9 @@ module.exports = class KodingCLI
   # import log from console.
   {log} = console
 
+  MODULE_ROOT = "#{__dirname}/../modules"
+  USER_MODULE_ROOT = "#{process.env.HOME}/.kd/modules"
+
   constructor: (@module, @command, @params)->
 
     # root directory of running command is @root
@@ -13,7 +16,13 @@ module.exports = class KodingCLI
 
     unless module
 
-      available = fs.readdirSync "#{__dirname}/../modules"
+      available = fs.readdirSync MODULE_ROOT
+      try
+        userAvailable = fs.readdirSync USER_MODULE_ROOT
+      catch error
+        userAvailable = []
+
+      available = available.concat(userAvailable).sort()
 
       log """
       Hi, this is the Koding CLI tool.
@@ -21,21 +30,24 @@ module.exports = class KodingCLI
 
       """
       log "You can run following modules:\n"
-      log "kd #{module.replace /.coffee$/, ''}" for module in available
+      log "kd #{module.replace /.coffee$/, ''} [command]" for module in available
       return
     
     # Loading module from the module path.
     try
-      @moduleClass = require "#{__dirname}/../modules/#{module}"
+      @moduleClass = require "#{MODULE_ROOT}/#{module}"
     catch error
-      log "[Koding] ERROR: Module #{module} not found."
-      return
+      try
+        @moduleClass = require "#{USER_MODULE_ROOT}/#{module}"
+      catch error
+        log "[Koding] ERROR: Module #{module} not found."
+        return
 
     {help} = @moduleClass
 
     # If user doesn't define any command, show help. If help is available.
     unless @command
-      if help then return log help else return log "It's #{module}s or something. That's all."
+      if help then return log help else return log "[Koding:#{module}] You are alone. There's no help."
 
     if @command is "help" then return log help
 

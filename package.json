@@ -24,6 +24,8 @@
   "dependencies": {
     "coffee-script": ">=1.6.0",
     "optimist": ">=0.3.7",
-    "ftps": ">=0.2.1"
+    "ftps": ">=0.2.1",
+    "js-yaml": ">=2.0.4",
+    "progress": ">=0.1.0"
   }
 }
