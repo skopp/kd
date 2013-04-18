@@ -91,7 +91,7 @@ module.exports = class Kite
       ###
       # You can call another kites.
       ###
-      fooBar: ({name}, callback) ->
+      fooBar: (options, callback) ->
         
         # Let's connect to another kite ..
         awosemekite = rope kite, 'awosemekite'
