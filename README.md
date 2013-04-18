@@ -5,7 +5,7 @@ This is the tool for Koding.
 
 ## Installing KD
 
-    npm install -g kite
+    [sudo] npm install -g kd
 
 After installing KD, you will have a `kd` executable to use everywhere.
 
@@ -27,13 +27,15 @@ You can define subcommands:
 
 This command will match these pattern:
 
-    class Module
-      command: (sub1, sub2)->
-        {paramkey, paramkey1, parambool} = @options
+```coffeescript
+module.exports = class Module
+  command: (sub1, sub2)->
+    {paramkey, paramkey1, parambool} = @options
 
-        # paramkey is paramval
-        # paramkey1 is paramval1
-        # parambool is true
+    # paramkey is paramval
+    # paramkey1 is paramval1
+    # parambool is true
+```
 
 ## Modules
 
@@ -41,20 +43,25 @@ Modules are in `modules` directory. Every module is a file exporting a class.
 
 This is an example with a name `mymodule.coffee`
 
-    module.exports = class MyModule
-    
-      @help: """
-      Koding MyModule Controller
-      """
+```coffeescript
+module.exports = class MyModule
 
-      constructor: (@config)->
-    
-      hello: (name)->
-        {with} = @options
-        console.log "hello #{name} and #{with}"
+  @help: """
+  Koding MyModule Controller
+  """
 
-      __command: (command, params)->
-        # magic command
+  alias:
+    hi: "hello"
+
+  constructor: (@config)->
+
+  hello: (name)->
+    {with} = @options
+    console.log "hello #{name} and #{with}"
+
+  __command: (command, params)->
+    # magic command
+```
 
 The `@help` static is mandatory. When user call `kd mymodule` that information will be shown.
 
@@ -62,7 +69,13 @@ The `@help` static is mandatory. When user call `kd mymodule` that information w
 
 If you write `__command` into your module class, your module will never give a error about command existance. It'll call that method.
 
+You can use `alias` to make aliases.
+
 The example above can be run calling:
+
+    kd mymodule hello koding --with birds
+
+or with the alias:
 
     kd mymodule hello koding --with birds
 
@@ -112,9 +125,11 @@ will run the tests.
 
 Kites have `.manifest.yml` files. These files looks like:
 
-    name": mykite
-    apiAdress: "http://koding.com
-    key: ""
+```yaml
+name": mykite
+apiAdress: "http://koding.com
+key: ""
+```
 
 This is the configuration file and you can easily change values using the `kd` cli tool.
 
@@ -126,9 +141,11 @@ or
 
 After writing that command your manifest file will be something like that:
 
-    name": mykite
-    apiAdress: "http://koding.com
-    key: 123456
+```yaml
+name": mykite
+apiAdress: "http://koding.com
+key: 123456
+```
 
 Also you can add custom variables into manifest file using
 
@@ -145,3 +162,28 @@ When you are in KD App directory, you can use `compile` command to compile the a
     kd app compile
 
 This will compile your application files and generate an `index.js`
+
+### Syncing Koding App
+
+As you know, you have FTPS for your Koding. When you want to put a file into your Koding from your computer,
+you can connect to FTP.
+
+When you create an app in your computer you can sync it with your Koding host. You should install `lftp` first.
+
+    brew install lftp
+
+or
+
+    sudo apt-get install lftp
+
+And you will be able to use that command to sync your app.
+
+    cd yourapp.kdapp
+    kd app sync
+
+This will update your app.
+
+---
+## LICENSE
+
+License information has not been detailed yet.
