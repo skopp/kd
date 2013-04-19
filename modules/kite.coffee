@@ -36,20 +36,17 @@ module.exports = class Kite
       .describe("n", "Name of the Kite")
       .describe("k", "Access key of the Kite")
       .describe("d", "Domain of the Kite, for debug")
-
-    unless name
-      return log "You must define a kite name."
     
     if name.match /[^\w]/
       return log "You mustn't use special chars in kite name."
 
-    kiteDir = "#{process.cwd()}/#{name}"
+    kiteDir = "#{process.cwd()}/#{name}.kite"
     tmpFile = "/tmp/koding.kd.kite.create.#{Date.now()}"
 
     # Bash file to run.
     bash = """
-    mkdir #{kiteDir}.kite
-    cd #{kiteDir}.kite
+    mkdir #{kiteDir}
+    cd #{kiteDir}
     touch .manifest.yml
     touch index.coffee
     mkdir resources
@@ -128,15 +125,15 @@ module.exports = class Kite
     install.stderr.on "data", (data)-> do ticker # process.stdout.write(""+i++); process.stdout.write data.toString()
 
     install.on "close", ->
-      fs.writeFileSync "#{kiteDir}.kite/index.coffee", index
+      fs.writeFileSync "#{kiteDir}/index.coffee", index
       manifestData = YAML.dump manifest
-      fs.writeFileSync "#{kiteDir}.kite/.manifest.yml", manifestData
+      fs.writeFileSync "#{kiteDir}/.manifest.yml", manifestData
       progress.tick(progress.total - progress.curr) # complete the blank.
       log "\nYour kite created successfully."
       log """
       Now enter into kite directory and run the kite with the following commands:
 
-      cd #{kiteDir}.kite
+      cd #{kiteDir}
       kd kite run
       """
       process.exit()
