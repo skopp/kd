@@ -10,17 +10,9 @@ module.exports = class Kite
   alias:
     "new": "create"
 
-  @help:"""
+  help:"""
   Kites are simply web services for Koding.
   You can share your kites over internet.
-
-  You can run following commands:
-
-  kd kite create
-  kd kite run
-  kd kite test
-  kd kite manifest
-  kd kite keygen
   """
 
   constructor: ({@config})->
@@ -44,15 +36,16 @@ module.exports = class Kite
     tmpFile = "/tmp/koding.kd.kite.create.#{Date.now()}"
 
     # Bash file to run.
+    # TODO: write full paths
     bash = """
-    mkdir #{kiteDir}
+    mkdir -p #{kiteDir}
     cd #{kiteDir}
-    touch .manifest.yml
-    touch index.coffee
-    mkdir resources
-    mkdir test
-    touch test/test.coffee
-    mkdir node_modules
+    touch #{kiteDir}/.manifest.yml
+    touch #{kiteDir}/index.coffee
+    mkdir -p #{kiteDir}/resources
+    mkdir -p #{kiteDir}/test
+    touch #{kiteDir}/test/test.coffee
+    mkdir -p #{kiteDir}/node_modules
     npm install kd-kite kd-rope js-yaml mocha
     """
 

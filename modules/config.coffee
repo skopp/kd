@@ -8,16 +8,8 @@ module.exports = class Config
   alias:
     ls: "list"
 
-  @help:"""
+  help:"""
   Koding configuration settings.
-
-  You can use following commands:
-
-  kd config set
-  kd config get
-  kd config remove
-  kd config list [--json]
-  kd config alias ALIAS MODULE
   """
 
   constructor: (@config)->

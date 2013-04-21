@@ -1,0 +1,21 @@
+#compdef kd 
+#autoload
+
+# KD Autocompletion Utility
+# Uses kd --modules and kd [module] --commands
+# to make completion.
+
+# Defining argument stats
+_arguments \
+  '1: :->_module' \
+  '2: :->_command' \
+&& return 0
+
+case $state in
+  _module)
+    _arguments '1:_service:(`kd --modules`)'
+  ;;
+  _command)
+    _arguments '2:_module:(`kd ${words[2]} --commands`)'
+  ;;
+esac

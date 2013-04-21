@@ -1,8 +1,10 @@
+fs = require "fs"
 {exec} = require "child_process"
 {log} = console
 
 module.exports = class Install
-  @help: """
+  
+  help: """
   Koding KD CLI Installer Tool
   """
 

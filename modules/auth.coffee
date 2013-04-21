@@ -3,7 +3,7 @@ http = require "http"
 
 module.exports = class Auth
 
-  @help: """
+  help: """
   Kite authentication things.
   """
   constructor: ({@config})->

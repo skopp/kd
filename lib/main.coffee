@@ -26,12 +26,21 @@ module.exports = class KodingCLI
 
       log """
       Hi, this is the Koding CLI tool.
-      You must choose a module. (e.g. kite, app)
+      You must choose a module.
 
       """
       log "You can run following modules:\n"
       log "kd #{module.replace /.coffee$/, ''} [command]" for module in available
       return
+
+    if module is "--modules"
+      available = fs.readdirSync MODULE_ROOT
+      try
+        userAvailable = fs.readdirSync USER_MODULE_ROOT
+      catch error
+        userAvailable = []
+
+      return log available.concat(userAvailable).sort().map((module)-> module.replace /.coffee$/, '').join " "
 
     @configFile = new ConfigFile
 
@@ -49,11 +58,25 @@ module.exports = class KodingCLI
         log "[Koding] ERROR: Module #{module} not found."
         return
 
-    {help} = @moduleClass
+    {help} = @moduleClass.prototype
 
     # If user doesn't define any command, show help. If help is available.
+    showHelp = ->
+
     unless @command
-      if help then return log help else return log "[Koding:#{module}] You are alone. There's no help."
+      if help
+        log "#{help}\n" 
+
+      log "You can use following commands for #{module}:\n"
+
+      commands = (command for command, method of @moduleClass.prototype when typeof method is "function" and not command.match /__/).sort()
+      log "kd #{module} #{command}" for command in commands
+      return
+
+    if @command is "--commands"
+      commands = (command for command, method of @moduleClass.prototype when typeof method is "function" and not command.match /__/).sort()
+      log commands.join " "
+      return
 
     if @command is "help" then return log help
 
