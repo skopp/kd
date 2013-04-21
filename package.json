@@ -13,8 +13,7 @@
   },
   "main" :        "./main.coffee",
   "bin":          {
-    "kd":         "./bin/kd",
-    "_kd":        "./bin/_kd"
+    "kd":         "./bin/kd"
   },
   "homepage":     "http://koding.com",
   "bugs":         "https://github.com/koding/kd/issues",
