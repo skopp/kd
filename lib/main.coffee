@@ -33,15 +33,6 @@ module.exports = class KodingCLI
       log "kd #{module.replace /.coffee$/, ''} [command]" for module in available
       return
 
-    if module is "--modules"
-      available = fs.readdirSync MODULE_ROOT
-      try
-        userAvailable = fs.readdirSync USER_MODULE_ROOT
-      catch error
-        userAvailable = []
-
-      return log available.concat(userAvailable).sort().map((module)-> module.replace /.coffee$/, '').join " "
-
     @configFile = new ConfigFile
 
     # Replace module with the alias
@@ -71,11 +62,6 @@ module.exports = class KodingCLI
 
       commands = (command for command, method of @moduleClass.prototype when typeof method is "function" and not command.match /__/).sort()
       log "kd #{module} #{command}" for command in commands
-      return
-
-    if @command is "--commands"
-      commands = (command for command, method of @moduleClass.prototype when typeof method is "function" and not command.match /__/).sort()
-      log commands.join " "
       return
 
     if @command is "help" then return log help
