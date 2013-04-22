@@ -147,14 +147,7 @@ module.exports = class Kite
   keygen: (name)-> 
     log "Keygen is not available for now. Please use Koding > Account > Kite Keys to have one."
 
-  manifest: ->
-    {argv: {key, value}} = @options
-      .usage("Creates key-value pairs in .manifest.yml file.")
-      .demand(["k"])
-      .alias("k", "key")
-      .alias("v", "value")
-      .describe("k", "Key of the kite manifest item")
-      .describe("v", "Value of the kite manifest item")
+  manifest: (key, value)->
 
     manifestFile = "#{process.cwd()}/.manifest.yml"
     manifest = require manifestFile

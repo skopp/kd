@@ -46,10 +46,16 @@ module.exports = class KodingCLI
       try
         @moduleClass = require "#{USER_MODULE_ROOT}/#{module}"
       catch error
-        log "[Koding] ERROR: Module #{module} not found."
-        return
+        try
+          @moduleClass = require "#{process.cwd()}/Kodingfile.coffee"
+          _originalCommand = command
+          command = @command = module
+          module = @module = ":Kodingfile"
+        catch error
+          log "[Koding] ERROR: Module #{module} not found."
+          return
 
-    {help} = @moduleClass.prototype
+    {help, silent} = @moduleClass.prototype
 
     # If user doesn't define any command, show help. If help is available.
     showHelp = ->
@@ -70,8 +76,9 @@ module.exports = class KodingCLI
     try
       @moduleInstance = new @moduleClass @configFile
     catch error
-      log error
-      log "[Koding:#{module}] ERROR: Module instance couldn't be created."
+      unless silent
+        log error
+        log "[Koding:#{module}] ERROR: Module instance couldn't be created."
       return
 
     # Replace command with the alias
@@ -81,7 +88,8 @@ module.exports = class KodingCLI
     # Trying to *find* new instances method as command
     unless @moduleInstance[@command]
       unless @moduleInstance.__command
-        log "[Koding:#{module}] ERROR: Command #{command} not found."
+        unless silent
+          log "[Koding:#{module}] ERROR: Command #{command} not found."
         return
       else
         nocommand = true
@@ -90,13 +98,18 @@ module.exports = class KodingCLI
     try
       @moduleInstance.options = require "optimist"
       unless nocommand
+        if _originalCommand and module is ":Kodingfile"
+          @params.reverse()
+          @params.push _originalCommand
+          @params.reverse()
         @moduleInstance[@command] @params...
       else
         @moduleInstance.__command @command, @params
     catch error
       # If any error occures, show the error.
-      log "[Koding:#{module}] EXCEPTION: #{error.message or error}"
+      unless silent
+        log "[Koding:#{module}] EXCEPTION: #{error.message or error}"
 
   # Creating new instance from command line tool.
-  @run: (coffeeBin, file, module, command, params...) => 
+  @run: (coffeeBin, file, module, command, params...) =>
     new @ module, command, params

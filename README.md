@@ -1,5 +1,5 @@
-Koding CLI Tool
-===============
+Koding CLI Task Manager
+=======================
 
 This is the tool for Koding.
 
@@ -51,12 +51,17 @@ module.exports = class Module
 
 Modules are in `modules` directory. Every module is a file exporting a class.
 
+Also you can create your modules in `.kd/modules` directory.
+
 This is an example with a name `mymodule.coffee`
 
 ```coffeescript
 module.exports = class MyModule
 
-  @help: """
+  # This closes the errors of the command. Not recommended.
+  silent: yes
+
+  help: """
   Koding MyModule Controller
   """
 
@@ -73,7 +78,29 @@ module.exports = class MyModule
     # magic command
 ```
 
-The `@help` static is mandatory. When user call `kd mymodule` that information will be shown.
+### Kodingfile.coffee
+
+You also can use `kd` with `Kodingfile.coffee` file. If a directory has that file kd will run it.
+The command shouldn't be a module name. Because kd will search for existing modules first. Kodingfile
+is the latest one it looks.
+
+While using Kodingfile, you should use only the command name:
+
+```coffeescript
+module.exports = class Kodingfile
+  hello: (name)->
+    console.log "Hello, #{name}"
+```
+
+will run with
+
+    kd hello fka
+
+This command will search for "hello" module first, won't find and will look for your Kodingfile.coffee.
+
+### Modules Meta
+
+The `help` is an help to show user. When user call `kd mymodule` that information will be shown.
 
 `@config` variable is the `~/.kdconfig` file. It's a JSON file and you can set global variables using `config` module (write `kd config`).
 

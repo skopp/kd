@@ -4,6 +4,9 @@ fs = require "fs"
 
 module.exports = class Completion
 
+  silent: yes
+
+  CACHE_ROOT = "#{process.env.HOME}/.kd/"
   MODULE_ROOT = __dirname
   USER_MODULE_ROOT = "#{process.env.HOME}/.kd/modules"
 
@@ -46,24 +49,36 @@ module.exports = class Completion
   """
 
   modules = ->
-    available = fs.readdirSync MODULE_ROOT
+    cacheFile = "/tmp/koding.kd.completion.modules.json"
     try
-      userAvailable = fs.readdirSync USER_MODULE_ROOT
+      return require cacheFile
     catch error
-      userAvailable = []
+      available = fs.readdirSync MODULE_ROOT
+      try
+        userAvailable = fs.readdirSync USER_MODULE_ROOT
+      catch error
+        userAvailable = []
 
-    available.concat(userAvailable).sort().map((module)-> module.replace /.coffee$/, '')
+      moduleList = available.concat(userAvailable).sort().map((module)-> module.replace /.coffee$/, '')
+      fs.writeFileSync cacheFile, JSON.stringify moduleList, null, 2
+      return moduleList
 
   commands = (module)->
+    cacheFile = "/tmp/koding.kd.completion.commands.#{module}.json"
     try
-      moduleClass = require "#{MODULE_ROOT}/#{module}"
+      return require cacheFile
     catch error
       try
-        moduleClass = require "#{USER_MODULE_ROOT}/#{module}"
+        moduleClass = require "#{MODULE_ROOT}/#{module}"
       catch error
-        return ""
+        try
+          moduleClass = require "#{USER_MODULE_ROOT}/#{module}"
+        catch error
+          return ""
     try
-      (command for command, method of moduleClass.prototype when typeof method is "function" and not command.match /__/).sort()
+      commandList = (command for command, method of moduleClass.prototype when typeof method is "function" and not command.match /__/).sort()
+      fs.writeFileSync cacheFile, JSON.stringify commandList, null, 2
+      return commandList
 
   modules: -> log modules().join "\n"
   commands: -> log commands(@options.argv.module).join "\n"
