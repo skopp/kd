@@ -9,6 +9,16 @@ This is the tool for Koding.
 
 After installing KD, you will have a `kd` executable to use everywhere.
 
+## Enabling BASH/ZSH Autocompletion
+
+KD has autocompletion feature for its modules. You can enable it writing the following command after install.
+
+    kd completion bash|sh
+
+or if you use ZSH you should write zsh instead of bash
+
+    kd completion zsh|sh
+
 ## Running
 
 You can run modules simply calling
