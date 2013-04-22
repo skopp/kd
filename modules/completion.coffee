@@ -86,7 +86,14 @@ module.exports = class Completion
         log _commands.join "\n"
 
   bash: ->
-    log 'echo "source <(kd completion shell)" >> ~/.bashrc'
+    # Because of OS X's EPIPE error, we need to give
+    # executable permission and run.
+    log """
+    mkdir -p ~/.kd
+    kd completion shell > ~/.kd/completion.sh
+    chmod +x ~/.kd/completion.sh
+    echo "source ~/.kd/completion.sh" >> ~/.bashrc
+    """
 
   zsh: ->
     log 'echo "source <(kd completion shell)" >> ~/.zshrc'
