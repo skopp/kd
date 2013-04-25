@@ -1,4 +1,5 @@
 fs = require "fs"
+url = require "url"
 YAML = require "js-yaml"
 Progress = require "progress"
 
@@ -9,6 +10,7 @@ module.exports = class Kite
 
   alias:
     "new": "create"
+    "i": "install"
 
   help:"""
   Kites are simply web services for Koding.
@@ -54,7 +56,7 @@ module.exports = class Kite
     ###
     #
     #  #{name} Kite for Koding
-    #  Author: #{@config['user.name']} <#{@config['user.email'] or 'you@example.com'}>
+    #  Author: #{@config['user.name'] or 'yourusername'} <#{@config['user.email'] or 'you@example.com'}>
     #
     #  This is an example kite with two methods:
     #
@@ -131,16 +133,78 @@ module.exports = class Kite
       """
       process.exit()
 
+  install: (repos...)->
+    cwd = process.cwd()
+    tmpFile = "/tmp/koding.kd.kite.install.#{Math.random()}"
+    bash = []
+    try
+      deps = if repos.length then repos else require("#{cwd}/.manifest.yml").dependencies
+    catch error
+      throw "It doesn't look like a Kite."
+
+    for dep, i in deps
+      _url = url.parse dep
+      unless _url.hostname
+        __url = url.format
+          protocol: 'https'
+          host: 'github.com'
+          pathname: _url.pathname
+        deps[i] = __url
+
+    for dep in deps
+      _url = url.parse dep
+      bash.push """
+      echo [Koding:kite] Found a dependency: #{_url.pathname}
+      echo [Koding:kite] Found the route: #{dep}
+      echo [Koding:kite]
+      echo [Koding:kite] Creating the kite #{_url.pathname}...
+      mkdir -p #{cwd}/kites/./#{_url.pathname}
+      echo [Koding:kite]
+      echo [Koding:kite] Requesting #{dep} to clone.
+      git clone --recursive -q #{dep} #{cwd}/kites/./#{_url.pathname}
+      echo [Koding:kite]
+      echo [Koding:kite] Trying to install npm dependencies if exist.
+      cd #{cwd}/kites/./#{_url.pathname} && npm i --loglevel=silent
+      echo [Koding:kite] Trying to install sub-dependencies of the kite.
+      cd #{cwd}/kites/./#{_url.pathname} && kd kite i
+      echo [Koding:kite]
+      """
+    bash.push "echo [Koding:kite] fin."
+    bash = bash.join "\n"
+
+    if deps.length > 0
+      fs.writeFileSync tmpFile, bash
+      install = spawn "bash", [tmpFile]
+      install.stdout.on "data", (data)-> process.stdout.write data
+      install.stderr.on "data", (data)-> process.stdout.write "[Koding:kite] ERROR "; process.stdout.write data
+    else
+      throw "You need to have something to install."
+
   run: ->
-    kiteFile = "#{process.cwd()}/index.coffee"
+    cwd = process.cwd()
+    kiteFile = "#{cwd}/index.coffee"
     exists = fs.existsSync kiteFile
     
     if exists
-      child = spawn "coffee", [kiteFile]
-      child.stdout.on "data", (data)->
-        process.stdout.write data.toString()
-      child.stderr.on "data", (data)->
-        process.stdout.write data.toString()
+      dependedFile = "/tmp/koding.kd.kite.depended.#{Math.random()}"
+      log "Starting depended kites if exists."
+      depended = """
+      for manifest in $(find #{cwd}/kites -name ".manifest.yml")
+      do
+        echo Running `dirname $manifest`...
+        coffee `dirname $manifest`/index.coffee &
+      done
+      """
+      fs.writeFileSync dependedFile, depended
+      dependencies = spawn "sh", [dependedFile]
+      dependencies.stdout.on "data", (data)->
+        process.stdout.write data
+      dependencies.stdout.on "end", ->
+        child = spawn "coffee", [kiteFile]
+        child.stdout.on "data", (data)->
+          process.stdout.write data.toString()
+        child.stderr.on "data", (data)->
+          process.stdout.write data.toString()
     else
       log "The index.coffee doesn't exist."
 

@@ -77,6 +77,8 @@ module.exports = class Completion
           return ""
     try
       commandList = (command for command, method of moduleClass.prototype when typeof method is "function" and not command.match /__/).sort()
+      try
+        commandList = commandList.concat Object.keys moduleClass.prototype.alias
       fs.writeFileSync cacheFile, JSON.stringify commandList, null, 2
       return commandList
 
