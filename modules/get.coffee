@@ -1,4 +1,5 @@
 fs = require "fs"
+url = require "url"
 {exec, spawn} = require "child_process"
 Progress = require "progress"
 {log} = console
@@ -9,21 +10,34 @@ module.exports = class Install
   Koding KD CLI Installer Tool
   """
 
-  __command: (url)->
+  __command: (repo)->
 
     cwd = process.cwd()
-    fragments = url.split /\/+/
+    fragments = repo.split /\/+/
     [username, repository] = fragments.slice -2
 
-    progress = new Progress 'Downloading: [:bar] :percent :etas', 
+    unless username and repository
+      throw "#{repo} doesn't look like an repo"
+
+    repoDefaults =
+      protocol: 'https'
+      hostname: 'github.com'
+    
+    parsed = url.parse(repo)
+    
+    repo = url.format repoDefaults extends parsed
+
+    console.log "[Koding:get] Found: #{repo}"
+
+    progress = new Progress "[Koding:get] Downloading: [:bar] :percent :etas", 
       total: 3
       incomplete: " "
       width: 20
 
-    tempFile = "/tmp/koding.kd.get.#{new Date()}"
+    tempFile = "/tmp/koding.kd.get.#{Math.random()}"
     bash = """
     mkdir -p #{cwd}/kites/
-    git clone --recursive #{url} #{cwd}/kites/#{username}/#{repository}
+    git clone --recursive #{repo} #{cwd}/kites/#{username}/#{repository}
     """
     fs.writeFileSync tempFile, bash
     clone = spawn "bash", [tempFile]

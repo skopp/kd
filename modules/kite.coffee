@@ -17,18 +17,24 @@ module.exports = class Kite
   You can share your kites over internet.
   """
 
+  keys: {}
+
   constructor: ({@config})->
-  
+    @keysFile = "#{process.env.HOME}/.kd/.keys.yml"
+    try
+      @keys = require @keysFile
+    catch error
+      fs.writeFileSync @keysFile ""
+      @keys = {}
+
   create: ->
 
-    {argv: {name, key, domain}} = @options
+    {argv: {name, domain}} = @options
       .usage("Creates a Kite template")
       .demand(["n"])
       .alias("n", "name")
-      .alias("k", "key")
       .alias("d", "domain")
       .describe("n", "Name of the Kite")
-      .describe("k", "Access key of the Kite")
       .describe("d", "Domain of the Kite, for debug")
     
     if name.match /[^\w]/
@@ -64,10 +70,13 @@ module.exports = class Kite
     #    - fooBar
     #
     ###
-    require 'js-yaml'
-    Kite = require 'kd-kite'
-    rope = require 'kd-rope'
-    manifest = require './.manifest.yml'
+    yaml          = require "js-yaml"
+    Kite          = require "kd-kite"
+    rope          = require "kd-rope"
+
+    manifest      = require "./.manifest.yml"
+    keys          = require "\#{process.env.HOME}/.kd/.keys.yml"
+    manifest.key  = keys[manifest.name]
 
     kite = new Kite manifest,
 
@@ -101,7 +110,6 @@ module.exports = class Kite
     manifest = 
       name      : name or 'Untitled',
       apiAdress : domain or 'https://koding.com',
-      key       : key or ''
 
     fs.writeFileSync tmpFile, bash
     log "Creating a new Kite, please wait..."
@@ -138,7 +146,7 @@ module.exports = class Kite
     tmpFile = "/tmp/koding.kd.kite.install.#{Math.random()}"
     bash = []
     try
-      deps = if repos.length then repos else require("#{cwd}/.manifest.yml").dependencies
+      deps = if repos then repos else require("#{cwd}/.manifest.yml").dependencies
     catch error
       throw "It doesn't look like a Kite."
 
@@ -192,7 +200,7 @@ module.exports = class Kite
       for manifest in $(find #{cwd}/kites -name ".manifest.yml")
       do
         echo Running `dirname $manifest`...
-        coffee `dirname $manifest`/index.coffee &
+        nohup coffee `dirname $manifest`/index.coffee
       done
       """
       fs.writeFileSync dependedFile, depended
@@ -208,11 +216,7 @@ module.exports = class Kite
     else
       log "The index.coffee doesn't exist."
 
-  keygen: (name)-> 
-    log "Keygen is not available for now. Please use Koding > Account > Kite Keys to have one."
-
   manifest: (key, value)->
-
     manifestFile = "#{process.cwd()}/.manifest.yml"
     manifest = require manifestFile
     unless value
@@ -222,6 +226,10 @@ module.exports = class Kite
       manifestData = YAML.dump manifest
       fs.writeFileSync manifestFile, manifestData
 
+  key: (name, key)->
+    @keys or= {}
+    @keys[name] = key
+    fs.writeFileSync @keysFile, YAML.dump @keys
 
   test: ->
     kiteTestFile = "#{process.cwd()}/test/test.coffee"
