@@ -36,8 +36,9 @@ module.exports = class App
 
   pistachios: /\{(\w*)?(\#\w*)?((?:\.\w*)*)(\[(?:\b\w*\b)(?:\=[\"|\']?.*[\"|\']?)\])*\{([^{}]*)\}\s*\}/g
 
-  compile: ->
-    manifest = JSON.parse fs.readFileSync "#{process.cwd()}/.manifest"
+  compile: (path)->
+    path ?= process.cwd()
+    manifest = JSON.parse fs.readFileSync "#{path}/.manifest"
     files = manifest.source.blocks.app.files
     source = ""
 

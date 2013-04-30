@@ -21,7 +21,9 @@
     "type":       "git",
     "url":        "git://github.com/koding/kd.git"
   },
-
+  "scripts":      {
+    "preinstall": "npm i -g coffee-script; mkdir -p ~/.kd"
+  },
 
   "dependencies": {
     "coffee-script":  ">=1.6.0",
