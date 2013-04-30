@@ -1,6 +1,8 @@
 fs = require "fs"
 YAML = require "js-yaml"
 
+{ask} = require "../lib/utils"
+
 module.exports = class Config
 
   {log} = console
@@ -43,8 +45,13 @@ module.exports = class Config
     @config.save()
 
   list:->
-    config = @config.getAll()
-    log if @options.argv.json then JSON.stringify config, null, 2 else YAML.dump config
+    ask "Your config file may contain confidental information, do you want to list? [yN]",
+      format: /[yN]/
+      callback: (answer)=>
+        if answer is "y"
+          config = @config.getAll()
+          log if @options.argv.json then JSON.stringify config, null, 2 else YAML.dump config
+        process.exit()
 
   alias: (alias, module)->
     return unless alias or module

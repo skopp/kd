@@ -2,6 +2,7 @@ fs = require "fs"
 url = require "url"
 YAML = require "js-yaml"
 Progress = require "progress"
+request = require "request"
 
 {spawn, exec} = require "child_process"
 {log} = console
@@ -85,6 +86,7 @@ module.exports = class Kite
     touch #{kiteDir}/.manifest.yml
     touch #{kiteDir}/index.coffee
     mkdir -p #{kiteDir}/resources
+    touch #{kiteDir}/resources/key.coffee
     mkdir -p #{kiteDir}/test
     touch #{kiteDir}/test/test.coffee
     mkdir -p #{kiteDir}/node_modules
@@ -107,10 +109,10 @@ module.exports = class Kite
     yaml          = require "js-yaml"
     Kite          = require "kd-kite"
     rope          = require "kd-rope"
+    key           = require "./resources/key"
 
     manifest      = require "./.manifest.yml"
-    keys          = require "\#{process.env.HOME}/.kd/.keys.yml"
-    manifest.key  = keys[manifest.name]
+    manifest      = key manifest
 
     kite = new Kite manifest,
 
@@ -142,8 +144,21 @@ module.exports = class Kite
     """
 
     manifest = 
-      name      : name or 'Untitled',
-      apiAdress : domain or 'https://koding.com',
+      name      : name or 'Untitled'
+      apiAdress : domain or 'http://localhost:3000'
+
+    keyFile = """
+    fs = require "fs"
+    module.exports = (manifest)->
+      try
+        key = fs.readFileSync "\#{process.env.HOME}/.kd/kites/\#{manifest.name}.key"
+        manifest.key = key
+      catch error
+        console.log "Your kite seems unregistered. You need to register it."
+        console.log "Please run: kd kite register -n \#{manifest.name} --save"
+        process.exit()
+      manifest
+    """
 
     fs.writeFileSync tmpFile, bash
     log "Creating a new Kite, please wait..."
@@ -163,6 +178,7 @@ module.exports = class Kite
 
     install.on "close", ->
       fs.writeFileSync "#{kiteDir}/index.coffee", index
+      fs.writeFileSync "#{kiteDir}/resources/key.coffee", keyFile
       manifestData = YAML.dump manifest
       fs.writeFileSync "#{kiteDir}/.manifest.yml", manifestData
       progress.tick(progress.total - progress.curr) # complete the blank.
@@ -231,37 +247,46 @@ module.exports = class Kite
       throw "You are not in a kite directory!"
 
     if manifest.type is "web"
-      return log """
-      This is a webserver kite.
-      Registering server...
-      """
 
-    cwd = process.cwd()
-    kiteFile = "#{cwd}/index.coffee"
-    exists = fs.existsSync kiteFile
-    
-    if exists
-      dependedFile = "/tmp/koding.kd.kite.depended.#{Math.random()}"
-      log "Starting depended kites if exists."
-      depended = """
-      for manifest in $(find #{cwd}/kites -name ".manifest.yml")
-      do
-        echo Running `dirname $manifest`...
-        nohup coffee `dirname $manifest`/index.coffee
-      done
-      """
-      fs.writeFileSync dependedFile, depended
-      dependencies = spawn "sh", [dependedFile]
-      dependencies.stdout.on "data", (data)->
-        process.stdout.write data
-      dependencies.stdout.on "end", ->
-        child = spawn "coffee", [kiteFile]
-        child.stdout.on "data", (data)->
-          process.stdout.write data.toString()
-        child.stderr.on "data", (data)->
-          process.stdout.write data.toString()
+      x = request.post "http://kontrol.in.koding.com/proxies/proxy.in.koding.com/services/#{manifest.name}",
+        body: JSON.stringify
+          rabbitkey: @config.kodingId
+          key: String(manifest.version)
+          host: manifest.host
+      , (err, res, body)->
+        if err then log "An error occured. #{err.message}"
+        log """
+        Probably successful! Your #{manifest.host} is public now.
+
+        Try opening http://#{manifest.name}-#{manifest.version}.x.kd.io
+        """
     else
-      log "The index.coffee doesn't exist."
+      cwd = process.cwd()
+      kiteFile = "#{cwd}/index.coffee"
+      exists = fs.existsSync kiteFile
+      
+      if exists
+        dependedFile = "/tmp/koding.kd.kite.depended.#{Math.random()}"
+        log "Starting depended kites if exists."
+        depended = """
+        for manifest in $(find #{cwd}/kites -name ".manifest.yml")
+        do
+          echo Running `dirname $manifest`...
+          nohup coffee `dirname $manifest`/index.coffee
+        done
+        """
+        fs.writeFileSync dependedFile, depended
+        dependencies = spawn "sh", [dependedFile]
+        dependencies.stdout.on "data", (data)->
+          process.stdout.write data
+        dependencies.stdout.on "end", ->
+          child = spawn "coffee", [kiteFile]
+          child.stdout.on "data", (data)->
+            process.stdout.write data.toString()
+          child.stderr.on "data", (data)->
+            process.stdout.write data.toString()
+      else
+        log "The index.coffee doesn't exist."
 
   manifest: (key, value)->
     manifestFile = "#{process.cwd()}/.manifest.yml"
@@ -277,6 +302,46 @@ module.exports = class Kite
     @keys or= {}
     @keys[name] = key
     fs.writeFileSync @keysFile, YAML.dump @keys
+
+  register: ->
+    {argv: {name, save}} = @options
+      .usage("Registers your Kite and give you a key.")
+      .demand(["n"])
+      .alias("n", "name")
+      .describe("n", "Name of the Kite")
+      .describe("save", "Save the Kite key")
+
+    unless @config['user.password']
+      return log """
+      You have to set your user.password.
+
+      kd config set user.password <yourpass>
+      """
+
+    unless @config['user.name']
+      return log """
+      You have to set your user.password.
+
+      kd config set user.password <yourpass>
+      """
+
+    request.post "http://localhost:3000/-/kite/register",
+      form:
+        username: @config["user.name"]
+        password: @config["user.password"]
+        kiteName: name
+    , (err, res, body)->
+
+      if err then log "An error occured. #{e.message}"
+
+      response = JSON.parse body
+      if response.error
+          log "[Koding:kite] ERROR: #{response.error}"
+        else
+          if save
+            exec "mkdir -p #{process.env.HOME}/.kd/kites/", ->
+              fs.writeFileSync "#{process.env.HOME}/.kd/kites/#{response.kiteName}.key", response.key
+          log response.key
 
   test: ->
     kiteTestFile = "#{process.cwd()}/test/test.coffee"
