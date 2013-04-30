@@ -3,7 +3,7 @@
   "description":  "Koding KD CLI",
   "keywords":     ["koding", "kd", "kite", "kdapp"],
   "author":       "Fatih Kadir Akın <fka@koding.com>",
-  "version":      "0.0.3",
+  "version":      "0.0.4",
   "licenses":     [{
     "type":       "MIT",
     "url":        "https://raw.github.com/koding/kd/master/LICENSE"

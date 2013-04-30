@@ -1,5 +1,6 @@
 fs = require "fs"
 ConfigFile = require "./config"
+utils = require "./utils"
 
 module.exports = class KodingCLI
 
@@ -13,6 +14,13 @@ module.exports = class KodingCLI
 
     # root directory of running command is @root
     @root = process.cwd()
+
+    kdIdFile = "#{process.env.HOME}/.kd/koding.key"
+    try
+      kdId = fs.readFileSync(kdIdFile).toString()
+    catch error
+      kdId = utils.keygen 64
+      fs.writeFileSync kdIdFile, kdId
 
     unless module
 
@@ -38,6 +46,8 @@ module.exports = class KodingCLI
     # Replace module with the alias
     if @configFile.config.alias?[module]
       module = @configFile.config.alias[module]
+
+    @configFile.config.kodingId = kdId
     
     # Loading module from the module path.
     try
@@ -57,14 +67,12 @@ module.exports = class KodingCLI
 
     {help, silent} = @moduleClass.prototype
 
-    # If user doesn't define any command, show help. If help is available.
-    showHelp = ->
-
     unless @command
       if help
         log "#{help}\n" 
 
-      log "You can use following commands for #{module}:\n"
+      unless help is no
+        log "You can use following commands for #{module}:\n"
 
       commands = (command for command, method of @moduleClass.prototype when typeof method is "function" and not command.match /__/).sort()
       log "kd #{module} #{command}" for command in commands

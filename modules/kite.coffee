@@ -5,6 +5,7 @@ Progress = require "progress"
 
 {spawn, exec} = require "child_process"
 {log} = console
+{ask} = require "../lib/utils"
 
 module.exports = class Kite
 
@@ -27,15 +28,48 @@ module.exports = class Kite
       fs.writeFileSync @keysFile ""
       @keys = {}
 
-  create: ->
+  wizard: ->
 
-    {argv: {name, domain}} = @options
-      .usage("Creates a Kite template")
-      .demand(["n"])
-      .alias("n", "name")
-      .alias("d", "domain")
-      .describe("n", "Name of the Kite")
-      .describe("d", "Domain of the Kite, for debug")
+    log """
+    Kites are simply web services for Koding. You can write, manage and share
+    your kites. When you start a Kite, it'll be online.
+
+    Awesome, right?
+    We think so.
+
+    Now, let's create a kite together. Please answer following questions.
+
+    First of all we need a name. It should be simple and meaningful. We like
+    lowercase names.
+    """
+
+    step1 = =>
+      ask "What is your Kite's name?",
+        format: /^[\w\_]+$/
+        callback: (name)=> 
+          @create {name}
+        error: (name)->
+          log """
+          
+          Ok, then. It seems you've entered wrong name. Try again.
+          This time find better than "#{name}".
+          So,
+          """
+
+    step1()
+
+  create: (argv)->
+
+    unless typeof argv is "object"
+      {argv: {name, domain}} = @options
+        .usage("Creates a Kite template")
+        .demand(["n"])
+        .alias("n", "name")
+        .alias("d", "domain")
+        .describe("n", "Name of the Kite")
+        .describe("d", "Domain of the Kite, for debug")
+    else
+      {name} = argv
     
     if name.match /[^\w]/
       return log "You mustn't use special chars in kite name."
@@ -189,6 +223,19 @@ module.exports = class Kite
       throw "You need to have something to install."
 
   run: ->
+
+    try
+      manifestFile = "#{process.cwd()}/.manifest.yml"
+      manifest = require manifestFile
+    catch error
+      throw "You are not in a kite directory!"
+
+    if manifest.type is "web"
+      return log """
+      This is a webserver kite.
+      Registering server...
+      """
+
     cwd = process.cwd()
     kiteFile = "#{cwd}/index.coffee"
     exists = fs.existsSync kiteFile
