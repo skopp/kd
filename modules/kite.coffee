@@ -25,7 +25,7 @@ module.exports = class Kite
     try
       @keys = require @keysFile
     catch error
-      fs.writeFileSync @keysFile ""
+      fs.writeFileSync @keysFile, ""
       @keys = {}
 
   wizard: ->
@@ -75,7 +75,7 @@ module.exports = class Kite
       return log "You mustn't use special chars in kite name."
 
     kiteDir = "#{process.cwd()}/#{name}.kite"
-    tmpFile = "/tmp/koding.kd.kite.create.#{Date.now()}"
+    tmpFile = "/tmp/koding.kd.kite.create.#{Math.random()}"
 
     # Bash file to run.
     # TODO: write full paths
