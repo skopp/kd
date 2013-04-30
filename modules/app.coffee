@@ -63,7 +63,7 @@ module.exports = class App
     /* KDAPP ENDS */
     }).call();
     """
-    fs.writeFileSync "#{process.cwd()}/index.js", mainSource
+    fs.writeFileSync "#{path}/index.js", mainSource
 
   create: (name)->
 
