@@ -19,6 +19,7 @@ module.exports = class KodingCLI
     try
       kdId = fs.readFileSync(kdIdFile).toString()
     catch error
+      fs.mkdirSync "#{process.env.HOME}/.kd"
       kdId = utils.keygen 64
       fs.writeFileSync kdIdFile, kdId
 
