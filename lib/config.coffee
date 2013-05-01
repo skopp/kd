@@ -2,6 +2,9 @@ YAML = require "js-yaml"
 fs = require "fs"
 
 module.exports = class ConfigFile
+
+  disabled: ["publicKey", "privateKey"]
+
   constructor: ->
     @configFile = "#{process.env.HOME}/.kdconfig"
     try
@@ -17,6 +20,7 @@ module.exports = class ConfigFile
   getAll: -> @config
 
   save:->
+    @disabled.forEach (item)=> @remove item
     fs.writeFileSync @configFile, YAML.dump @config
 
   load:-> 

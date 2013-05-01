@@ -7,21 +7,32 @@ module.exports = class KodingCLI
   # import log from console.
   {log} = console
 
+  KD_DIR = "#{process.env.HOME}/.kd"
   MODULE_ROOT = "#{__dirname}/../modules"
-  USER_MODULE_ROOT = "#{process.env.HOME}/.kd/modules"
+  USER_MODULE_ROOT = "#{KD_DIR}/modules"
 
   constructor: (@module, @command, @params)->
 
     # root directory of running command is @root
     @root = process.cwd()
 
-    kdIdFile = "#{process.env.HOME}/.kd/koding.key"
+    publicKeyPath = "#{KD_DIR}/koding.key.pub"
+    privateKeyPath = "#{KD_DIR}/koding.key"
     try
-      kdId = fs.readFileSync(kdIdFile).toString()
+      publicKey = fs.readFileSync(publicKeyPath).toString()
     catch error
-      fs.mkdirSync "#{process.env.HOME}/.kd"
-      kdId = utils.keygen 64
-      fs.writeFileSync kdIdFile, kdId
+      try
+        unless fs.existsSync KD_DIR then fs.mkdirSync KD_DIR
+      publicKey = utils.keygen 64
+      fs.writeFileSync publicKeyPath, publicKey
+
+    try
+      privateKey = fs.readFileSync(privateKeyPath).toString()
+    catch error
+      try
+        unless fs.existsSync KD_DIR then fs.mkdirSync KD_DIR
+      privateKey = utils.keygen 64
+      fs.writeFileSync privateKeyPath, privateKey
 
     unless module
 
@@ -48,7 +59,8 @@ module.exports = class KodingCLI
     if @configFile.config.alias?[module]
       module = @configFile.config.alias[module]
 
-    @configFile.config.kodingId = kdId
+    @configFile.config.publicKey = publicKey
+    @configFile.config.privateKey = privateKey
     
     # Loading module from the module path.
     try
