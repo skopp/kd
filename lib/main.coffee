@@ -61,7 +61,8 @@ module.exports = class KodingCLI
 
     @configFile.config.publicKey = publicKey
     @configFile.config.privateKey = privateKey
-    
+
+    # These should show errors inside modules
     # Loading module from the module path.
     try
       @moduleClass = require "#{MODULE_ROOT}/#{module}"
@@ -82,7 +83,7 @@ module.exports = class KodingCLI
 
     unless @command
       if help
-        log "#{help}\n" 
+        log "#{help}\n"
 
       unless help is no
         log "You can use following commands for #{module}:\n"
