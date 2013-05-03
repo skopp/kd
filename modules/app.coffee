@@ -1,6 +1,7 @@
 fs = require "fs"
 {exec, spawn} = require "child_process"
 coffee = require "coffee-script"
+nodePath = require "path"
 
 manifest = (username, name)->
   JSON.stringify
@@ -37,16 +38,18 @@ module.exports = class App
   pistachios: /\{(\w*)?(\#\w*)?((?:\.\w*)*)(\[(?:\b\w*\b)(?:\=[\"|\']?.*[\"|\']?)\])*\{([^{}]*)\}\s*\}/g
 
   compile: (path)->
-    path ?= process.cwd()
-    manifest = JSON.parse fs.readFileSync "#{path}/.manifest"
+    appPath  = path or process.cwd()
+    manifest = JSON.parse fs.readFileSync (path.join appPath, ".manifest")
     files = manifest.source.blocks.app.files
     source = ""
 
     for file in files
+      file = nodePath.normalize (nodePath.join path, file)  if path
       try
         compiled = coffee.compile(fs.readFileSync(file).toString(), bare: true)
       catch error
-        compiled = fs.readFileSync(file).toString()
+        console.error "Failed while compiling '#{file}':\n", error
+        process.exit(2)
 
       block = """
       /* BLOCK STARTS: #{file} */
@@ -63,7 +66,7 @@ module.exports = class App
     /* KDAPP ENDS */
     }).call();
     """
-    fs.writeFileSync "#{path}/index.js", mainSource
+    fs.writeFileSync "#{appPath}/index.js", mainSource
 
   create: (name)->
 
@@ -90,6 +93,7 @@ module.exports = class App
     appDir = "#{process.cwd()}/#{name}.kdapp"
     tmpFile = "/tmp/koding.kd.app.create.#{Date.now()}"
 
+    # That's shame :/
     # Bash file to run.
     bash = """
     mkdir -p #{appDir}
@@ -101,7 +105,7 @@ module.exports = class App
     touch #{appDir}/resources/style.css
     cd #{appDir}/resources
     wget https://koding.com/images/default.app.thumb.png
-    mv #{appDir}/resources/default.app.thumb.png #{appDir}/resources/icon.128.png 
+    mv #{appDir}/resources/default.app.thumb.png #{appDir}/resources/icon.128.png
     """
 
     fs.writeFileSync tmpFile, bash
@@ -147,7 +151,7 @@ module.exports = class App
 
     unless @config['user.password'] then return requirePassword()
     unless @config['user.password'] then return requirePassword()
-    
+
     log "Connecting your Koding filesystem, please wait..."
 
     ftps = require "ftps"
