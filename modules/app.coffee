@@ -38,8 +38,23 @@ module.exports = class App
   pistachios: /\{(\w*)?(\#\w*)?((?:\.\w*)*)(\[(?:\b\w*\b)(?:\=[\"|\']?.*[\"|\']?)\])*\{([^{}]*)\}\s*\}/g
 
   compile: (path)->
-    appPath  = path or process.cwd()
-    manifest = JSON.parse fs.readFileSync (nodePath.join appPath, ".manifest")
+
+    appPath = path or process.cwd()
+
+    for manifestName in [".manifest", "manifest.json"]
+      manifestPath = (nodePath.join appPath, manifestName)
+      break  if fs.existsSync manifestPath
+
+    try
+      manifest = JSON.parse fs.readFileSync manifestPath
+    catch err
+      if err.errno is 34
+        console.error "Manifest file does not exist '#{manifestPath}'"
+        process.exit 34
+      else
+        console.error "Manifest file seems corrupted '#{manifestPath}'\n", err
+        process.exit 3
+
     files = manifest.source.blocks.app.files
     source = ""
 
