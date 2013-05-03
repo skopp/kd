@@ -39,7 +39,7 @@ module.exports = class App
 
   compile: (path)->
     appPath  = path or process.cwd()
-    manifest = JSON.parse fs.readFileSync (path.join appPath, ".manifest")
+    manifest = JSON.parse fs.readFileSync (nodePath.join appPath, ".manifest")
     files = manifest.source.blocks.app.files
     source = ""
 
