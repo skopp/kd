@@ -104,7 +104,7 @@ module.exports = class App
           # exec "say coffeescript\ error\."
           # exec "say coffeescript\ error\. #{escapeshell error.message.replace(/\'/,'')}."
           fs.writeFileSync "/tmp/koding.kd.compile.last_error", [fs.realpathSync(file), first_line, first_column].join(":")
-          process.exit first_line+1
+          process.exit 1
       else
         try
           compiled = fs.readFileSync(file).toString()
