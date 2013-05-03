@@ -3,6 +3,12 @@ Koding CLI Task Manager
 
 This is the tool for Koding.
 
+## Quick Install
+
+    [sudo] npm install -g kd
+    echo '. <(kd completion shell)' >> .profile
+    echo '. <(kd config --aliases)' >> .profile
+
 ## Installing KD
 
     [sudo] npm install -g kd

@@ -76,7 +76,7 @@ module.exports = class KodingCLI
           module = @module = ":Kodingfile"
         catch error
           log "[Koding] ERROR: Module #{module} not found."
-          return
+          return process.exit 1
 
     {help, silent} = @moduleClass.prototype
 
@@ -100,7 +100,7 @@ module.exports = class KodingCLI
       unless silent
         log error
         log "[Koding:#{module}] ERROR: Module instance couldn't be created."
-      return
+      return process.exit 1
 
     # Replace command with the alias
     if @moduleInstance.alias?[@command]
@@ -111,7 +111,7 @@ module.exports = class KodingCLI
       unless @moduleInstance.__command
         unless silent
           log "[Koding:#{module}] ERROR: Command #{command} not found."
-        return
+        return process.exit 1
       else
         nocommand = true
 
@@ -123,13 +123,14 @@ module.exports = class KodingCLI
           @params.reverse()
           @params.push _originalCommand
           @params.reverse()
-        @moduleInstance[@command] @params...
+        response = @moduleInstance[@command] @params...
       else
-        @moduleInstance.__command @command, @params
+        response = @moduleInstance.__command @command, @params
     catch error
       # If any error occures, show the error.
       unless silent
         log "[Koding:#{module}] EXCEPTION: #{error.message or error}"
+        return process.exit 1
 
   # Creating new instance from command line tool.
   @run: (coffeeBin, file, module, command, params...) =>

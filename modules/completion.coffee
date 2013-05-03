@@ -22,15 +22,19 @@ module.exports = class Completion
       _arguments \\
         '1: :->_module' \\
         '2: :->_command' \\
+        '*: :->_rest' \\
       && return 0
 
       # State Change
       case $state in
         _module)
-          _arguments '1:_service:(`kd completion modules`)'
+          _arguments '1:_module:(`kd completion modules`)'
         ;;
         _command)
-          _arguments '2:_module:(`kd completion commands --module=${words[2]}`)'
+          _arguments '2:_command:(`kd completion commands --module=${words[2]}`)'
+        ;;
+        _rest)
+          _files
         ;;
       esac
 
@@ -39,9 +43,11 @@ module.exports = class Completion
   elif type complete &>/dev/null; then
     _kd_completion() {
 
-      local si="$IFS"
-      COMPREPLY=(`kd completion complete "$COMP_CWORD" "$COMP_LINE"`)
-      IFS="$si"
+      if [ "$COMP_CWORD" -eq 2 ]; then
+        COMPREPLY=( $(compgen -f -- ${COMP_WORDS[COMP_CWORD]}) )
+      else
+        COMPREPLY=(`kd completion complete "$COMP_CWORD" "$COMP_LINE"`)
+      fi
 
     }
     complete -F _kd_completion kd

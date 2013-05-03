@@ -1,5 +1,8 @@
 fs = require "fs"
 {exec, spawn} = require "child_process"
+
+{ask} = require "../lib/utils"
+
 coffee = require "coffee-script"
 
 manifest = (username, name)->
@@ -37,16 +40,60 @@ module.exports = class App
   pistachios: /\{(\w*)?(\#\w*)?((?:\.\w*)*)(\[(?:\b\w*\b)(?:\=[\"|\']?.*[\"|\']?)\])*\{([^{}]*)\}\s*\}/g
 
   compile: (path)->
+
     path ?= process.cwd()
-    manifest = JSON.parse fs.readFileSync "#{path}/.manifest"
+    manifest = JSON.parse fs.readFileSync "#{path}/manifest.json"
     files = manifest.source.blocks.app.files
     source = ""
 
     for file in files
-      try
-        compiled = coffee.compile(fs.readFileSync(file).toString(), bare: true)
-      catch error
-        compiled = fs.readFileSync(file).toString()
+      [fileType] = file.split(".").slice -1
+      if fileType isnt "js"
+        data = fs.readFileSync file
+        try
+          compiled = coffee.compile data.toString(), bare: true
+        catch error
+          if error.location
+            {first_line, last_line, first_column, last_column} = error.location
+            lines = data.toString().split("\n")
+            trace = lines.slice(first_line, last_line+1).join "\n"
+            point = ""
+            uppoint = ""
+            for i in [0..last_column]
+              if i < first_column
+                point+=" "
+              else
+                point+="^"
+            point+= " #{error.message}"
+
+          console.log """
+          #{error}
+            at #{file} line #{first_line+1}:#{last_line+1} column #{first_column}:#{last_column}
+
+          #{file}
+          .
+          .
+          #{first_line-1}
+          #{first_line}   #{lines[first_line-1]}
+          \033[0;31m#{first_line+1}   #{trace}\033[0m
+          \033[0;32m#{Array(String(first_line+1).length+1).join(" ")}   #{point}\033[0m
+          #{first_line+2}  #{lines[first_line+1]}
+          #{first_line+3}
+          .
+          .
+          """
+          escapeshell = (cmd)=> 
+            cmd = cmd.replace /(["\s'$`\\])/g, '\\$1'
+            "\"#{cmd}\""
+          # exec "say coffeescript\ error\."
+          # exec "say coffeescript\ error\. #{escapeshell error.message.replace(/\'/,'')}."
+          fs.writeFileSync "/tmp/koding.kd.compile.last_error", [fs.realpathSync(file), first_line, first_column].join(":")
+          process.exit first_line
+      else
+        try
+          compiled = fs.readFileSync(file).toString()
+        catch error
+          console.log error
 
       block = """
       /* BLOCK STARTS: #{file} */
@@ -64,6 +111,10 @@ module.exports = class App
     }).call();
     """
     fs.writeFileSync "#{path}/index.js", mainSource
+
+  "compile-debug": ->
+    [file, line, col] = fs.readFileSync("/tmp/koding.kd.compile.last_error").toString().split(":")
+    process.stdout.write "#{file} +\"norm\ #{Number(line)+1}G#{Number(col)+1}\|\""
 
   create: (name)->
 
@@ -93,7 +144,7 @@ module.exports = class App
     # Bash file to run.
     bash = """
     mkdir -p #{appDir}
-    touch #{appDir}/.manifest
+    touch #{appDir}/manifest.json
     touch #{appDir}/ChangeLog
     touch #{appDir}/README
     touch #{appDir}/index.coffee
@@ -108,7 +159,7 @@ module.exports = class App
     log "Creating #{name}.kdapp..."
 
     exec "bash #{tmpFile}", =>
-      fs.writeFileSync "#{appDir}/.manifest", manifest(@config['user.name'], name)
+      fs.writeFileSync "#{appDir}/manifest.json", manifest(@config['user.name'], name)
       if sync
         process.chdir appDir
         @sync()
@@ -126,7 +177,7 @@ module.exports = class App
       cd appname.kdapp
       """
     try
-      manifest = JSON.parse fs.readFileSync "#{process.cwd()}/.manifest"
+      manifest = JSON.parse fs.readFileSync "#{process.cwd()}/manifest.json"
     catch error
       return log """
       You have to create a manifest file.

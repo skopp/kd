@@ -50,6 +50,7 @@ module.exports = class Config
       callback: (answer)=>
         if answer is "y"
           config = @config.getAll()
+          @config.disabled.forEach (item)=> delete config[item]
           log if @options.argv.json then JSON.stringify config, null, 2 else YAML.dump config
         process.exit()
 
@@ -61,4 +62,10 @@ module.exports = class Config
     @config.save()
 
   # magic
-  __command: (command)-> @get command
+  __command: (command)-> 
+    if @options.argv.aliases
+      log """
+      alias kd-debug="kd app compile-debug|xargs -o vim"
+      """
+      process.exit 0
+    @get command
