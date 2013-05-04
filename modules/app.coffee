@@ -35,6 +35,11 @@ manifest = (username, name)->
 
 {log} = console
 
+# Make sure to work with node's old versions
+unless fs.existsSync
+  path = require "path"
+  fs.existsSync = path.existsSync
+
 module.exports = class App
   constructor: ({@config})->
 
